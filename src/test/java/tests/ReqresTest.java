@@ -2,10 +2,7 @@ package tests;
 
 import com.google.gson.Gson;
 import io.restassured.response.Response;
-import objects.reqres.ResourceData;
-import objects.reqres.ReqResSupport;
-import objects.reqres.SingleResource;
-import objects.reqres.User;
+import objects.reqres.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -177,15 +174,20 @@ public class ReqresTest {
         User user = User.builder()
                 .email("sydney@fife")
                 .build();
-        Response response = given()
+        String body = given()
                 .body(user)
                 .when()
                 .log().all()
                 .post("https://reqres.in/api/register")
                 .then()
                 .log().all()
-                .extract().response();
-        Assert.assertEquals(response.statusCode(), HTTP_BAD_REQUEST);
+                .statusCode(HTTP_BAD_REQUEST)
+                .extract().body().asString();
+        ResponseError expectedError = ResponseError.builder()
+                .error("Missing password")
+                .build();
+        ResponseError actualError = new Gson().fromJson(body, ResponseError.class);
+        Assert.assertEquals(actualError, expectedError);
     }
 
     @Test
@@ -210,15 +212,20 @@ public class ReqresTest {
         User user = User.builder()
                 .email("peter@klaven")
                 .build();
-        Response response = given()
+        String body = given()
                 .body(user)
                 .when()
                 .log().all()
                 .post("https://reqres.in/api/login")
                 .then()
                 .log().all()
-                .extract().response();
-        Assert.assertEquals(response.statusCode(), HTTP_BAD_REQUEST);
+                .statusCode(HTTP_BAD_REQUEST)
+                .extract().body().asString();
+        ResponseError expectedError = ResponseError.builder()
+                .error("Missing password")
+                .build();
+        ResponseError actualError = new Gson().fromJson(body, ResponseError.class);
+        Assert.assertEquals(actualError, expectedError);
     }
 
     @Test
