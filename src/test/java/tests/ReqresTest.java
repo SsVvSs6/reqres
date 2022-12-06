@@ -5,6 +5,7 @@ import io.restassured.response.Response;
 import objects.reqres.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 import static io.restassured.RestAssured.given;
 import static java.net.HttpURLConnection.*;
@@ -159,6 +160,7 @@ public class ReqresTest {
                 .password("pistol")
                 .build();
         Response response = given()
+                .header("Content-Type", "application/json")
                 .body(user)
                 .when()
                 .log().all()
@@ -174,20 +176,22 @@ public class ReqresTest {
         User user = User.builder()
                 .email("sydney@fife")
                 .build();
-        String body = given()
+        Response response = given()
+                .header("Content-Type", "application/json")
                 .body(user)
                 .when()
                 .log().all()
                 .post("https://reqres.in/api/register")
                 .then()
                 .log().all()
-                .statusCode(HTTP_BAD_REQUEST)
-                .extract().body().asString();
+                .extract().response();
         ResponseError expectedError = ResponseError.builder()
                 .error("Missing password")
                 .build();
-        ResponseError actualError = new Gson().fromJson(body, ResponseError.class);
-        Assert.assertEquals(actualError, expectedError);
+        ResponseError actualError = new Gson().fromJson(response.getBody().asString(), ResponseError.class);
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertEquals(response.statusCode(), HTTP_BAD_REQUEST);
+        softAssert.assertEquals(actualError, expectedError);
     }
 
     @Test
@@ -197,6 +201,7 @@ public class ReqresTest {
                 .password("cityslicka")
                 .build();
         Response response = given()
+                .header("Content-Type", "application/json")
                 .body(user)
                 .when()
                 .log().all()
@@ -212,20 +217,22 @@ public class ReqresTest {
         User user = User.builder()
                 .email("peter@klaven")
                 .build();
-        String body = given()
+        Response response = given()
+                .header("Content-Type", "application/json")
                 .body(user)
                 .when()
                 .log().all()
                 .post("https://reqres.in/api/login")
                 .then()
                 .log().all()
-                .statusCode(HTTP_BAD_REQUEST)
-                .extract().body().asString();
+                .extract().response();
         ResponseError expectedError = ResponseError.builder()
                 .error("Missing password")
                 .build();
-        ResponseError actualError = new Gson().fromJson(body, ResponseError.class);
-        Assert.assertEquals(actualError, expectedError);
+        ResponseError actualError = new Gson().fromJson(response.getBody().asString(), ResponseError.class);
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertEquals(response.statusCode(), HTTP_BAD_REQUEST);
+        softAssert.assertEquals(actualError, expectedError);
     }
 
     @Test
