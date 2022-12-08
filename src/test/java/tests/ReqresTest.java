@@ -13,11 +13,21 @@ import static java.net.HttpURLConnection.*;
 
 public class ReqresTest {
 
+    private static final String USER_NAME = "morpheus";
+    private static final String CREATE_USER_JOB = "leader";
+    private static final String UPDATE_USER_JOB = "zion resident";
+    private static final String SUCCESSFUL_EMAIL = "eve.holt@reqres.in";
+    private static final String UNSUCCESSFUL_REGISTER_EMAIL = "sydney@fife";
+    private static final String UNSUCCESSFUL_LOGIN_EMAIL = "peter@klaven";
+    private static final String REGISTER_PASSWORD = "pistol";
+    private static final String LOGIN_PASSWORD = "cityslicka";
+    private static final String MISSING_PASSWORD_ERROR = "Missing password";
+
     @Test
     public void postCreateUserTest() {
         User user = User.builder()
-                .name("morpheus")
-                .job("leader")
+                .name(USER_NAME)
+                .job(CREATE_USER_JOB)
                 .build();
         Response response = new UserAdapter().createUser(user);
         Assert.assertEquals(response.statusCode(), HTTP_CREATED);
@@ -52,21 +62,28 @@ public class ReqresTest {
 
     @Test
     public void getSingleResourceTest() {
-        String resourceId = "2";
+        int expectedResourceId = 2;
+        String expectedResourceName = "fuchsia rose";
+        int expectedResourceYear = 2001;
+        String expectedResourceColor = "#C74375";
+        String expectedResourcePantoneValue = "17-2031";
+        String supportUrl = "https://reqres.in/#support-heading";
+        String supportText = "To keep ReqRes free, contributions towards server costs are appreciated!";
         SingleResource expectedSingleResource = SingleResource.builder()
                 .data(ResourceData.builder()
-                        .id(2)
-                        .name("fuchsia rose")
-                        .year(2001)
-                        .color("#C74375")
-                        .pantone_value("17-2031")
+                        .id(expectedResourceId)
+                        .name(expectedResourceName)
+                        .year(expectedResourceYear)
+                        .color(expectedResourceColor)
+                        .pantone_value(expectedResourcePantoneValue)
                         .build())
                 .support(ReqResSupport.builder()
-                        .url("https://reqres.in/#support-heading")
-                        .text("To keep ReqRes free, contributions towards server costs are appreciated!")
+                        .url(supportUrl)
+                        .text(supportText)
                         .build())
                         .build();
-        String body = new ResourceAdapter().getSingleResource(resourceId).body().asString();
+        String singleResourceId = "2";
+        String body = new ResourceAdapter().getSingleResource(singleResourceId).body().asString();
         SingleResource actualSingleResource = new Gson().fromJson(body, SingleResource.class);
         Assert.assertEquals(actualSingleResource, expectedSingleResource);
     }
@@ -82,8 +99,8 @@ public class ReqresTest {
     public void putUpdateUserTest() {
         String userId = "2";
         User user = User.builder()
-                .name("morpheus")
-                .job("zion resident")
+                .name(USER_NAME)
+                .job(UPDATE_USER_JOB)
                 .build();
         Response response = new UserAdapter().putUpdateUser(userId, user);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
@@ -93,8 +110,8 @@ public class ReqresTest {
     public void patchUpdateUserTest() {
         String userId = "2";
         User user = User.builder()
-                .name("morpheus")
-                .job("zion resident")
+                .name(USER_NAME)
+                .job(UPDATE_USER_JOB)
                 .build();
         Response response = new UserAdapter().patchUpdateUser(userId, user);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
@@ -110,8 +127,8 @@ public class ReqresTest {
     @Test
     public void postSuccessfulRegisterTest() {
         User user = User.builder()
-                .email("eve.holt@reqres.in")
-                .password("pistol")
+                .email(SUCCESSFUL_EMAIL)
+                .password(REGISTER_PASSWORD)
                 .build();
         Response response = new UserAdapter().registerUser(user);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
@@ -120,11 +137,11 @@ public class ReqresTest {
     @Test
     public void postUnsuccessfulRegisterTest() {
         User user = User.builder()
-                .email("sydney@fife")
+                .email(UNSUCCESSFUL_REGISTER_EMAIL)
                 .build();
         Response response = new UserAdapter().registerUser(user);
         ResponseError expectedError = ResponseError.builder()
-                .error("Missing password")
+                .error(MISSING_PASSWORD_ERROR)
                 .build();
         ResponseError actualError = new Gson().fromJson(response.getBody().asString(), ResponseError.class);
         SoftAssert softAssert = new SoftAssert();
@@ -135,8 +152,8 @@ public class ReqresTest {
     @Test
     public void postSuccessfulLoginTest() {
         User user = User.builder()
-                .email("eve.holt@reqres.in")
-                .password("cityslicka")
+                .email(SUCCESSFUL_EMAIL)
+                .password(LOGIN_PASSWORD)
                 .build();
         Response response = new UserAdapter().loginUser(user);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
@@ -145,11 +162,11 @@ public class ReqresTest {
     @Test
     public void postUnsuccessfulLoginTest() {
         User user = User.builder()
-                .email("peter@klaven")
+                .email(UNSUCCESSFUL_LOGIN_EMAIL)
                 .build();
         Response response = new UserAdapter().loginUser(user);
         ResponseError expectedError = ResponseError.builder()
-                .error("Missing password")
+                .error(MISSING_PASSWORD_ERROR)
                 .build();
         ResponseError actualError = new Gson().fromJson(response.getBody().asString(), ResponseError.class);
         SoftAssert softAssert = new SoftAssert();
