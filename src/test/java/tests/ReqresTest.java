@@ -1,13 +1,14 @@
 package tests;
 
+import adapter.ResourceAdapter;
+import adapter.UserAdapter;
 import com.google.gson.Gson;
 import io.restassured.response.Response;
-import objects.reqres.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
+import objects.*;
 
-import static io.restassured.RestAssured.given;
 import static java.net.HttpURLConnection.*;
 
 public class ReqresTest {
@@ -18,70 +19,40 @@ public class ReqresTest {
                 .name("morpheus")
                 .job("leader")
                 .build();
-        Response response = given()
-                .body(user)
-                .when()
-                .log().all()
-                .post("https://reqres.in/api/users")
-                .then()
-                .log().all()
-                .extract().response();
+        Response response = new UserAdapter().createUser(user);
         Assert.assertEquals(response.statusCode(), HTTP_CREATED);
     }
 
     @Test
     public void getListUsersTest() {
-        Response response = given()
-                .when()
-                .get("https://reqres.in/api/users?page=2")
-                .then()
-                .log().all()
-                .extract().response();
+        String page = "2";
+        Response response = new UserAdapter().getUsersList(page);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
     }
 
     @Test
     public void getSingleUserTest() {
-        Response response = given()
-                .when()
-                .get("https://reqres.in/api/users/2")
-                .then()
-                .log().all()
-                .extract().response();
+        String userId = "2";
+        Response response = new UserAdapter().getSingleUser(userId);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
     }
 
     @Test
     public void getSingleUserNotFoundTest() {
-        Response response = given()
-                .when()
-                .get("https://reqres.in/api/users/23")
-                .then()
-                .log().all()
-                .extract().response();
+        String userId = "23";
+        Response response = new UserAdapter().getSingleUser(userId);
         Assert.assertEquals(response.statusCode(), HTTP_NOT_FOUND);
     }
 
     @Test
     public void getListResourceTest() {
-        Response response = given()
-                .when()
-                .get("https://reqres.in/api/unknown")
-                .then()
-                .log().all()
-                .extract().response();
+        Response response = new ResourceAdapter().getResourceList();
         Assert.assertEquals(response.statusCode(), HTTP_OK);
     }
 
     @Test
     public void getSingleResourceTest() {
-        String body = given()
-                .when()
-                .get("https://reqres.in/api/unknown/2")
-                .then()
-                .log().all()
-                .statusCode(HTTP_OK)
-                .extract().body().asString();
+        String resourceId = "2";
         SingleResource expectedSingleResource = SingleResource.builder()
                 .data(ResourceData.builder()
                         .id(2)
@@ -95,61 +66,44 @@ public class ReqresTest {
                         .text("To keep ReqRes free, contributions towards server costs are appreciated!")
                         .build())
                         .build();
+        String body = new ResourceAdapter().getSingleResource(resourceId).body().asString();
         SingleResource actualSingleResource = new Gson().fromJson(body, SingleResource.class);
         Assert.assertEquals(actualSingleResource, expectedSingleResource);
     }
 
     @Test
     public void getSingleResourceNotFoundTest() {
-        Response response = given()
-                .when()
-                .get("https://reqres.in/api/unknown/23")
-                .then()
-                .log().all()
-                .extract().response();
+        String resourceId = "23";
+        Response response = new ResourceAdapter().getSingleResource(resourceId);
         Assert.assertEquals(response.statusCode(), HTTP_NOT_FOUND);
     }
 
     @Test
     public void putUpdateUserTest() {
+        String userId = "2";
         User user = User.builder()
                 .name("morpheus")
                 .job("zion resident")
                 .build();
-        Response response = given()
-                .body(user)
-                .when()
-                .put("https://reqres.in/api/users/2")
-                .then()
-                .log().all()
-                .extract().response();
+        Response response = new UserAdapter().putUpdateUser(userId, user);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
     }
 
     @Test
     public void patchUpdateUserTest() {
+        String userId = "2";
         User user = User.builder()
                 .name("morpheus")
                 .job("zion resident")
                 .build();
-        Response response = given()
-                .body(user)
-                .when()
-                .patch("https://reqres.in/api/users/2")
-                .then()
-                .log().all()
-                .extract().response();
+        Response response = new UserAdapter().patchUpdateUser(userId, user);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
     }
 
     @Test
     public void deleteUserTest() {
-        Response response = given()
-                .when()
-                .delete("https://reqres.in/api/users/2")
-                .then()
-                .log().all()
-                .extract().response();
+        String userId = "2";
+        Response response = new UserAdapter().deleteUser(userId);
         Assert.assertEquals(response.statusCode(), HTTP_NO_CONTENT);
     }
 
@@ -159,15 +113,7 @@ public class ReqresTest {
                 .email("eve.holt@reqres.in")
                 .password("pistol")
                 .build();
-        Response response = given()
-                .header("Content-Type", "application/json")
-                .body(user)
-                .when()
-                .log().all()
-                .post("https://reqres.in/api/register")
-                .then()
-                .log().all()
-                .extract().response();
+        Response response = new UserAdapter().registerUser(user);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
     }
 
@@ -176,15 +122,7 @@ public class ReqresTest {
         User user = User.builder()
                 .email("sydney@fife")
                 .build();
-        Response response = given()
-                .header("Content-Type", "application/json")
-                .body(user)
-                .when()
-                .log().all()
-                .post("https://reqres.in/api/register")
-                .then()
-                .log().all()
-                .extract().response();
+        Response response = new UserAdapter().registerUser(user);
         ResponseError expectedError = ResponseError.builder()
                 .error("Missing password")
                 .build();
@@ -200,15 +138,7 @@ public class ReqresTest {
                 .email("eve.holt@reqres.in")
                 .password("cityslicka")
                 .build();
-        Response response = given()
-                .header("Content-Type", "application/json")
-                .body(user)
-                .when()
-                .log().all()
-                .post("https://reqres.in/api/login")
-                .then()
-                .log().all()
-                .extract().response();
+        Response response = new UserAdapter().loginUser(user);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
     }
 
@@ -217,15 +147,7 @@ public class ReqresTest {
         User user = User.builder()
                 .email("peter@klaven")
                 .build();
-        Response response = given()
-                .header("Content-Type", "application/json")
-                .body(user)
-                .when()
-                .log().all()
-                .post("https://reqres.in/api/login")
-                .then()
-                .log().all()
-                .extract().response();
+        Response response = new UserAdapter().loginUser(user);
         ResponseError expectedError = ResponseError.builder()
                 .error("Missing password")
                 .build();
@@ -237,12 +159,8 @@ public class ReqresTest {
 
     @Test
     public void getDelayedResponseTest() {
-        Response response = given()
-                .when()
-                .get("https://reqres.in/api/users?delay=3")
-                .then()
-                .log().all()
-                .extract().response();
+        String page = "3";
+        Response response = new UserAdapter().getUsersDelay(page);
         Assert.assertEquals(response.statusCode(), HTTP_OK);
     }
 }
