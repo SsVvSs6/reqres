@@ -147,6 +147,7 @@ public class ReqresTest {
         SoftAssert softAssert = new SoftAssert();
         softAssert.assertEquals(response.statusCode(), HTTP_BAD_REQUEST);
         softAssert.assertEquals(actualError, expectedError);
+        softAssert.assertAll();
     }
 
     @Test
@@ -172,6 +173,7 @@ public class ReqresTest {
         SoftAssert softAssert = new SoftAssert();
         softAssert.assertEquals(response.statusCode(), HTTP_BAD_REQUEST);
         softAssert.assertEquals(actualError, expectedError);
+        softAssert.assertAll();
     }
 
     @Test
